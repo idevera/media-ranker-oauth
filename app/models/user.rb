@@ -6,10 +6,10 @@ class User < ApplicationRecord
 
    def self.from_auth_hash(provider, auth_hash)
      user = User.new
-     user[:user_name] = auth_hash['info']['name']
+     user[:username] = auth_hash['info']['nickname']
      user[:email] = auth_hash['info']['email']
      user[:provider] = auth_hash['provider']
-     user[:uid] = auth_hash['info']['uid']
+     user[:uid] = auth_hash['uid']
      return user
  #     user = new
  # +    user.provider = provider
