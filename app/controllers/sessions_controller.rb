@@ -1,5 +1,7 @@
 class SessionsController < ApplicationController
 
+  skip_before_action :require_login, only: [:login]
+  
   def index
     @user = User.find(session[:user_id])
   end
@@ -8,7 +10,7 @@ class SessionsController < ApplicationController
     auth_hash = request.env['omniauth.auth']
 
     if auth_hash['uid']
-      
+
       user = User.find_by(uid: auth_hash['uid'])
 
       if user == nil
