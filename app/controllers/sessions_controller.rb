@@ -1,30 +1,36 @@
 class SessionsController < ApplicationController
 
-  def login_form
+  def index
+    @user = User.find(session[:user_id])
   end
 
   def login
     auth_hash = request.env['omniauth.auth']
 
     if auth_hash['uid']
-      user = User.find_by(uid: params[:uid])
-      if user.nil?
+      
+      user = User.find_by(uid: auth_hash['uid'])
+
+      if user == nil
+
         # If user is not found, make a new user using the users create method
-          user = User.from_auth_hash(params[:provider], auth_hash)
-        # redirect_to users_path, params: auth_hash, method: post
-        if user.save
+        user = User.from_auth_hash(params[:provider], auth_hash)
+
+        if user.save!
           session[:user_id] = user.id
           flash[:status] = :success
-          flash[:result_text] = "Successfully logged in! Welcome back!"
+          flash[:result_text] = "Successfully logged in as #{user.username}"
         else
           flash[:status] = :failure
-          flash[:result_text] = "Could not log in!"
+          flash[:result_text] = "Whoops! There was a problem with you request!"
           flash[:messages] = user.errors.messages
         end
 
+      # Logic if you have already logged in previously!!!! Based on your uid
       else
-        flash[:status] = :failure
-        flash[:result_text] = "Could not log in!"
+        session[:user_id] = user.id
+        flash[:status] = :success
+        flash[:result_text] = "Welcome back #{user.username}!"
         flash[:messages] = user.errors.messages
       end
 
@@ -33,11 +39,13 @@ class SessionsController < ApplicationController
   end
 
   def logout
+
     session[:user_id] = nil
-    flash.now[:status] = :success
-    flash.now[:result_text] = "Successfully logged out!"
+    flash[:status] = :success
+    flash[:result_text] = "Successfully logged out!"
 
     redirect_to root_path
+
   end
 
 
