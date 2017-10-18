@@ -5,7 +5,7 @@ class WorksController < ApplicationController
 
   before_action :category_from_work, except: [:root, :index, :new, :create]
 
-
+  before_action :require_same_user, only: [:update, :destroy]
 
   def root
     @albums = Work.best_albums
@@ -24,7 +24,11 @@ class WorksController < ApplicationController
 
   def create
     @work = Work.new(media_params)
+
     @media_category = @work.category
+
+    @work.owner = @login_user.id
+
     if @work.save
       flash[:status] = :success
       flash[:result_text] = "Successfully created #{@media_category.singularize} #{@work.id}"
@@ -59,10 +63,16 @@ class WorksController < ApplicationController
   end
 
   def destroy
-    @work.destroy
-    flash[:status] = :success
-    flash[:result_text] = "Successfully destroyed #{@media_category.singularize} #{@work.id}"
-    redirect_to root_path
+    if @work.destroy
+      flash[:status] = :success
+      flash[:result_text] = "Successfully destroyed #{@media_category.singularize} #{@work.id}"
+      redirect_to root_path
+    else
+      flash[:status] = :failure
+      flash[:result_text] = "You must be the work owner to delete this work!"
+      flash[:messages] = @work.errors.messages
+      redirect_to work_path(@work)
+    end
   end
 
   def upvote
@@ -94,12 +104,23 @@ class WorksController < ApplicationController
 
 private
   def media_params
-    params.require(:work).permit(:title, :category, :creator, :description, :publication_year)
+    params.require(:work).permit(:title, :category, :creator, :description, :publication_year, :owner)
   end
 
   def category_from_work
     @work = Work.find_by(id: params[:id])
     render_404 unless @work
     @media_category = @work.category.downcase.pluralize
+  end
+
+  def require_same_user
+    if @work.owner == @login_user.id
+      return
+    else
+      flash[:status] = :failure
+      flash[:result_text] = "You must be the work owner to edit this work!"
+      flash[:messages] = @work.errors.messages
+      redirect_to work_path(@work)
+    end
   end
 end
