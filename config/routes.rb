@@ -8,7 +8,7 @@ Rails.application.routes.draw do
   resources :works
   post '/works/:id/upvote', to: 'works#upvote', as: 'upvote'
 
-  resources :users, only: [:index, :show, :create]
+  resources :users, only: [:index, :show]
 
   get '/auth/github', as: 'github'
   get '/auth/github/callback', to: 'sessions#login'

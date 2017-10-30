@@ -8,7 +8,7 @@ class UsersController < ApplicationController
     render_404 unless @user
   end
 
-  def create
+  # def create
     # self.from_auth_hash(params[:provider], auth_hash)
     #
     # if user.save
@@ -22,5 +22,5 @@ class UsersController < ApplicationController
     # end
     #
     # redirect_to root_path
-  end
+  # end
 end
